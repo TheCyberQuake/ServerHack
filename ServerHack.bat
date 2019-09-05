@@ -1,6 +1,6 @@
 @echo off
 color 3f
-title Minecraft Server Redirection Hack v1.2
+title Minecraft Server Redirection Hack v1.2.1
 
 :: We escalate to Admin due to being a requirement for AdGuard Home
 
