@@ -51,6 +51,8 @@ title Minecraft Server Redirection Hack v1.2.1
 ::Script Start
 :::::::::::::::::::::::::::::
 
+set /a ipchanged=0
+
 if not exist "%CD%\DNS\AdGuardHome.exe" (
   color 8f
   echo Downloading AdGuard Home...
@@ -75,6 +77,7 @@ copy /y NUL "%CD%\DNS\data\querylog.json" >NUL
 
 :: Create Server.txt if it doesn't exist, prevents error at next step
 if not exist "%CD%\Server.txt" copy /y NUL Server.txt >NUL
+if not exist "%CD%\lastIP.txt" copy /y NUL lastIP.txt >NUL
 
 :: Pull saved server, if exists bypass asking for server info
 set /p saved=<"%CD%\Server.txt"
@@ -87,17 +90,28 @@ if "%saved%" == "" (
 cls
 
 :: Get the IP of the Server
-for /f "tokens=1,2,3 delims= " %%A in ('ping -4 -n 1 %server% ^| find "Pinging"') do ( 
-  if "%%C" == "with" (
-	set ServerIP=%%B
+for /f "tokens=2,3 delims= " %%A in ('ping -4 -n 1 %server% ^| find "Pinging"') do ( 
+  if "%%B" == "with" (
+    set ServerIP=%%A
   ) else (
-    set str=%%C
-	set ServerIP=!str:~1,-1!
+    set str=%%B
+    set ServerIP=!str:~1,-1!
   )
 )
 
 :: Get IP of current machine
 for /f "delims=[] tokens=2" %%A in ('ping -4 -n 1 %ComputerName% ^| findstr [') do set NetworkIP=%%A
+set /p lastIP=<"%CD%\lastIP.txt"
+
+if not "%lastIP%" == "" (
+  if not "%lastIP%" == "%NetworkIP%" (
+    color 5f
+	set /a ipchanged=1
+	echo %NetworkIP%>lastIP.txt
+  )
+) else (
+  echo %NetworkIP%>lastIP.txt
+)
 
 :: Ensure the Server is valid and reachable (responds to pings)
 if not "%ServerIP%" == "" (
@@ -106,7 +120,7 @@ if not "%ServerIP%" == "" (
   if errorlevel 1 (
     color 4f
     echo ERROR: Could not resolve IP for %server%. Is it a valid address?
-	if not "%saved%" == "" echo Delete Server.txt if you wish to stop auto-connecting to this server
+    if not "%saved%" == "" echo Delete Server.txt if you wish to stop auto-connecting to this server
     pause
     exit /B 1
   )
@@ -129,38 +143,41 @@ move /Y "%cd%\DNS\AdGuardHome.yaml" "%CD%\DNS\AdGuardHome.yaml.bak" >NUL
 :: Go through the old yaml.bak line by line, modify what's needed to update the ruleset, output to new file
 for /F "usebackq delims=" %%A in ("%cd%\DNS\AdGuardHome.yaml.bak") do (
   if "%%A" == "user_rules: []" (
-	echo user_rules:>> "%cd%\DNS\AdGuardHome.yaml"
+    echo user_rules:>> "%cd%\DNS\AdGuardHome.yaml"
     echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome.yaml"
   ) else (
     if "%%A" == "user_rules:" (
-	  echo user_rules:>> "%cd%\DNS\AdGuardHome.yaml"
-	  echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome.yaml"
-	  set /a skipnow=1
+      echo user_rules:>> "%cd%\DNS\AdGuardHome.yaml"
+      echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome.yaml"
+      set /a skipnow=1
 	) else (
-	  if "!skipnow!" == "0" (
-	    echo.%%A>> "%cd%\DNS\AdGuardHome.yaml"
-	  ) else (
-	    set /a skipnow=0
-	  )
-	)
+      if "!skipnow!" == "0" (
+        echo.%%A>> "%cd%\DNS\AdGuardHome.yaml"
+      ) else (
+        set /a skipnow=0
+      )
+    )
   )
 )
 
 :: Put the ruleset in filters, probably not necessary
 echo %ServerIP% hivebedrock.network>"%CD%\DNS\data\filters\0.txt"
 echo.
-echo.
 
 :: Tell user what settings to use for DNS on device
+if %ipchanged% == 1 (
+  echo DNS SERVER IP CHANGE DETECTED. PLEASE CHANGE YOUR DEVICE DNS SETTINGS.
+)
+echo.
 echo Please add "%NetworkIP%" as the primary DNS on your device,
 echo and add "1.1.1.1" as the secondary DNS
 echo.
 echo.
 
 :launch
-:: Open firstrun.rtf for Instructions for initial AdGuard setup
-if not exist "%CD%\DNS\AdGuardHome.yaml" write.exe firstrun.rtf
+  :: Open firstrun.rtf for Instructions for initial AdGuard setup
+  if not exist "%CD%\DNS\AdGuardHome.yaml" write.exe firstrun.rtf
 
-:: Launch AdGuardHome to do the DNS server
-"%CD%\DNS\AdGuardHome.exe"
-pause
+  :: Launch AdGuardHome to do the DNS server
+  "%CD%\DNS\AdGuardHome.exe"
+  pause
