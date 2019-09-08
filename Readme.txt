@@ -17,3 +17,15 @@ Usage:
   12. Go to Servers, then load The Hive
   13. If everything is working, you should now be loaded into your server
  
+Color Codes:
+
+Update 1.2.1 added color codes to the script. The screen window should always
+important info on screen, it can sometimes be easily ignored due to being a
+wall of text once adguard home loads. So the screen will change colors to reflect
+different circumstances.
+
+Light Blue - Everythings working normally
+Red - Critical error. Likely URL/IP given failed ping check to ensure it's valid
+Gray - Downloading adguard, or first launch initilization required
+Purple - The script detected an IP change on the computer it's running on. You will
+    likely need to update your DNS settings on the device running Minecraft
