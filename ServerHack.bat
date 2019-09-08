@@ -176,8 +176,11 @@ echo.
 
 :launch
   :: Open firstrun.rtf for Instructions for initial AdGuard setup
-  if not exist "%CD%\DNS\AdGuardHome.yaml" write.exe firstrun.rtf
-
+  if not exist "%CD%\DNS\AdGuardHome.yaml" (
+    color 8f
+    write.exe firstrun.rtf
+  )
+  
   :: Launch AdGuardHome to do the DNS server
   "%CD%\DNS\AdGuardHome.exe"
   pause
