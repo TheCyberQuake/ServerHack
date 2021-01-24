@@ -53,7 +53,7 @@ title Minecraft Server Redirection Hack v1.2.1
 
 set /a ipchanged=0
 
-if not exist "%CD%\DNS\AdGuardHome.exe" (
+if not exist "%CD%\DNS\AdGuardHome\AdGuardHome.exe" (
   color 8f
   echo Downloading AdGuard Home...
   powershell -nologo -noprofile -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_Windows_amd64.zip', 'DNS.zip')"
@@ -73,7 +73,7 @@ set skipnow = 0
 cd /d "%~dp0"
 
 :: Clear previous query log
-copy /y NUL "%CD%\DNS\data\querylog.json" >NUL
+copy /y NUL "%CD%\DNS\AdGuardHome\data\querylog.json" >NUL
 
 :: Create Server.txt if it doesn't exist, prevents error at next step
 if not exist "%CD%\Server.txt" copy /y NUL Server.txt >NUL
@@ -138,21 +138,21 @@ echo Set to connect to %server%
 if not "%saved%" == "" echo Delete Server.txt if you wish to stop auto-connecting to this server
 
 :: Rename AdGuardHome.yaml to .bak, prepares for writing new ruleset
-move /Y "%cd%\DNS\AdGuardHome.yaml" "%CD%\DNS\AdGuardHome.yaml.bak" >NUL
+move /Y "%cd%\DNS\AdGuardHome\AdGuardHome.yaml" "%CD%\DNS\AdGuardHome\AdGuardHome.yaml.bak" >NUL
 
 :: Go through the old yaml.bak line by line, modify what's needed to update the ruleset, output to new file
-for /F "usebackq delims=" %%A in ("%cd%\DNS\AdGuardHome.yaml.bak") do (
+for /F "usebackq delims=" %%A in ("%cd%\DNS\AdGuardHome\AdGuardHome.yaml.bak") do (
   if "%%A" == "user_rules: []" (
-    echo user_rules:>> "%cd%\DNS\AdGuardHome.yaml"
-    echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome.yaml"
+    echo user_rules:>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
+    echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
   ) else (
     if "%%A" == "user_rules:" (
-      echo user_rules:>> "%cd%\DNS\AdGuardHome.yaml"
-      echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome.yaml"
+      echo user_rules:>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
+      echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
       set /a skipnow=1
 	) else (
       if "!skipnow!" == "0" (
-        echo.%%A>> "%cd%\DNS\AdGuardHome.yaml"
+        echo.%%A>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
       ) else (
         set /a skipnow=0
       )
@@ -161,7 +161,7 @@ for /F "usebackq delims=" %%A in ("%cd%\DNS\AdGuardHome.yaml.bak") do (
 )
 
 :: Put the ruleset in filters, probably not necessary
-echo %ServerIP% hivebedrock.network>"%CD%\DNS\data\filters\0.txt"
+echo %ServerIP% hivebedrock.network>"%CD%\DNS\AdGuardHome\data\filters\0.txt"
 echo.
 
 :: Tell user what settings to use for DNS on device
@@ -176,11 +176,11 @@ echo.
 
 :launch
   :: Open firstrun.rtf for Instructions for initial AdGuard setup
-  if not exist "%CD%\DNS\AdGuardHome.yaml" (
+  if not exist "%CD%\DNS\AdGuardHome\AdGuardHome.yaml" (
     color 8f
     write.exe firstrun.rtf
   )
   
   :: Launch AdGuardHome to do the DNS server
-  "%CD%\DNS\AdGuardHome.exe"
+  "%CD%\DNS\AdGuardHome\AdGuardHome.exe"
   pause
