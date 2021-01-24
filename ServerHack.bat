@@ -149,6 +149,7 @@ for /F "usebackq delims=" %%A in ("%cd%\DNS\AdGuardHome\AdGuardHome.yaml.bak") d
     if "%%A" == "user_rules:" (
       echo user_rules:>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
       echo - %ServerIP% hivebedrock.network>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
+      echo - %ServerIP% geo.hivebedrock.network>> "%cd%\DNS\AdGuardHome\AdGuardHome.yaml"
       set /a skipnow=1
 	) else (
       if "!skipnow!" == "0" (
